@@ -1,4 +1,4 @@
-const CACHE = 'despacho-v1';
+const CACHE = 'despacho-v3';
 const BASE = self.registration.scope;
 const ASSETS = [BASE, BASE + 'manifest.json', BASE + 'icon.svg'];
 
