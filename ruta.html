@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruta de Hoy</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F5F0;
+    --surface: #FFF;
+    --surface2: #F0EDE8;
+    --ink: #1A1814;
+    --ink2: #6B6760;
+    --ink3: #A8A49F;
+    --accent: #2D6A4F;
+    --accent-light: #D8F3DC;
+    --warn: #92400E;
+    --warn-light: #FEF3C7;
+    --danger: #991B1B;
+    --border: #E2DDD8;
+    --radius: 12px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 0 0 40px;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--accent);
+    color: #fff;
+    padding: 16px 18px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header-date { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+  .header-stats {
+    display: flex;
+    gap: 16px;
+    margin-top: 10px;
+    font-size: 13px;
+    opacity: 0.9;
+  }
+  .header-stats span strong { font-weight: 600; }
+
+  /* DEPOT ROW */
+  .depot-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: var(--surface2);
+    border-bottom: 2px solid var(--border);
+  }
+  .depot-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: #fff;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .depot-info { flex: 1; }
+  .depot-name { font-weight: 600; font-size: 14px; }
+  .depot-addr { font-size: 12px; color: var(--ink2); margin-top: 2px; }
+
+  /* STOP CARD */
+  .stop-card {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 18px;
+    position: relative;
+  }
+  .stop-card.done {
+    opacity: 0.5;
+  }
+  .stop-top {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .stop-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .stop-num.done-num {
+    background: var(--ink3);
+  }
+  .stop-info { flex: 1; min-width: 0; }
+  .stop-name { font-weight: 600; font-size: 15px; }
+  .stop-addr { font-size: 13px; color: var(--ink2); margin-top: 3px; line-height: 1.4; }
+  .stop-notes {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--warn);
+    background: var(--warn-light);
+    padding: 3px 9px;
+    border-radius: 4px;
+  }
+  .stop-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .bultos-badge {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .dist-badge {
+    font-size: 11px;
+    color: var(--ink3);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ACTIONS */
+  .stop-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .btn-wsp {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: none;
+    background: #25D366;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  .btn-wsp:hover { opacity: 0.85; }
+  .btn-done {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--ink2);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-done.active {
+    background: var(--accent-light);
+    color: var(--accent);
+    border-color: var(--accent-light);
+  }
+
+  /* CONNECTOR LINE */
+  .connector {
+    width: 2px;
+    height: 16px;
+    background: var(--border);
+    margin-left: 35px;
+  }
+
+  /* FINISH ROW */
+  .finish-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: var(--surface2);
+    border-top: 2px solid var(--border);
+    margin-top: 8px;
+  }
+
+  /* EMPTY */
+  .empty {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--ink3);
+  }
+  .empty a {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 10px 20px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.3);
+    margin-top: 10px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #fff;
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  @media print {
+    .stop-actions, .header { display: none; }
+    .stop-card { border: 1px solid #ccc; margin-bottom: 8px; border-radius: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+const DEPOT = { lat: -34.6288, lng: -58.4092 };
+
+const ZONES = [
+  { name: 'Sur', order: 1, localidades: ['parque patricios','barracas','boca','la boca','san telmo','liniers','mataderos','villa lugano','lomas de zamora','lanus','lanús','avellaneda','quilmes','berazategui','nueva pompeya','pompeya','villa soldati'] },
+  { name: 'Centro', order: 2, localidades: ['microcentro','retiro','san nicolas','san nicolás','monserrat','puerto madero','constitucion','constitución','once','balvanera','congreso'] },
+  { name: 'Oeste', order: 3, localidades: ['ituzaingo','ituzaingó','caseros','san martin','san martín','moron','morón','hurlingham','ramos mejia','ramos mejía','haedo','caballito','flores','floresta','villa del parque','devoto','villa devoto','villa real','monte castro'] },
+  { name: 'Norte', order: 4, localidades: ['palermo','recoleta','belgrano','nunez','núñez','colegiales','olivos','martinez','martínez','vicente lopez','vicente lópez','san isidro','acassuso','boulogne','villa urquiza','saavedra','villa pueyrredon','villa pueyrredón'] }
+];
+
+function distKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function optimizarRuta(lista) {
+  const conCoords = lista.filter(p => p.lat && p.lng);
+  const sinCoords = lista.filter(p => !p.lat || !p.lng);
+  const visitados = new Array(conCoords.length).fill(false);
+  const ruta = [];
+  let curLat = DEPOT.lat, curLng = DEPOT.lng;
+
+  for (let i = 0; i < conCoords.length; i++) {
+    let minDist = Infinity, minIdx = -1;
+    for (let j = 0; j < conCoords.length; j++) {
+      if (visitados[j]) continue;
+      const d = distKm(curLat, curLng, conCoords[j].lat, conCoords[j].lng);
+      if (d < minDist) { minDist = d; minIdx = j; }
+    }
+    visitados[minIdx] = true;
+    ruta.push({ pedido: conCoords[minIdx], dist: minDist });
+    curLat = conCoords[minIdx].lat;
+    curLng = conCoords[minIdx].lng;
+  }
+
+  const distVuelta = ruta.length ? distKm(curLat, curLng, DEPOT.lat, DEPOT.lng) : 0;
+  sinCoords.forEach(p => ruta.push({ pedido: p, dist: null }));
+  const totalKm = ruta.reduce((s, r) => s + (r.dist || 0), 0) + distVuelta;
+  return { ruta, totalKm, distVuelta };
+}
+
+function wspUrl(telefono, nombre) {
+  let num = (telefono || '').replace(/\D/g, '');
+  if (!num) return null;
+  if (num.startsWith('0')) num = num.slice(1);
+  if (!num.startsWith('54')) num = '54' + num;
+  if (num.startsWith('54') && !num.startsWith('549')) num = '549' + num.slice(2);
+  const msg = encodeURIComponent(`Hola ${nombre}, te avisamos que estamos por llegar con tu pedido. ¡Nos vemos en unos minutos! 🚚`);
+  return `https://wa.me/${num}?text=${msg}`;
+}
+
+// Estado de entregados (persiste en sessionStorage para esta sesión)
+let entregados = JSON.parse(sessionStorage.getItem('despacho_entregados') || '[]');
+
+function toggleEntregado(id) {
+  if (entregados.includes(id)) {
+    entregados = entregados.filter(x => x !== id);
+  } else {
+    entregados.push(id);
+  }
+  sessionStorage.setItem('despacho_entregados', JSON.stringify(entregados));
+  render();
+}
+
+const wspIcon = `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.532 5.848L0 24l6.335-1.54A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.374l-.36-.214-3.724.905.944-3.617-.235-.372A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>`;
+
+function render() {
+  const pedidos = JSON.parse(localStorage.getItem('despacho_pedidos') || '[]');
+  const app = document.getElementById('app');
+
+  if (!pedidos.length) {
+    app.innerHTML = `
+      <div class="empty">
+        <div style="font-size:48px">🚚</div>
+        <p style="margin-top:12px;font-size:15px">No hay pedidos cargados todavía.</p>
+        <a href="index.html">Ir a cargar pedidos</a>
+      </div>`;
+    return;
+  }
+
+  const { ruta, totalKm, distVuelta } = optimizarRuta(pedidos);
+  const totalBultos = pedidos.reduce((s, p) => s + p.bultos, 0);
+  const nEntregados = entregados.length;
+  const progPct = ruta.length ? Math.round(nEntregados / ruta.length * 100) : 0;
+
+  const fecha = new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  const stops = ruta.map((r, idx) => {
+    const p = r.pedido;
+    const done = entregados.includes(p.id);
+    const dist = r.dist !== null ? r.dist.toFixed(1) + ' km' : '—';
+    const wsp = wspUrl(p.telefono, p.nombre);
+
+    return `
+      <div class="connector"></div>
+      <div class="stop-card ${done ? 'done' : ''}">
+        <div class="stop-top">
+          <div class="stop-num ${done ? 'done-num' : ''}">${done ? '✓' : idx + 1}</div>
+          <div class="stop-info">
+            <div class="stop-name">${p.nombre}</div>
+            <div class="stop-addr">${[p.direccion, p.localidad].filter(Boolean).join(' — ')}</div>
+            ${p.notas ? `<div class="stop-notes">${p.notas}</div>` : ''}
+          </div>
+          <div class="stop-right">
+            <div class="bultos-badge">${p.bultos} bulto${p.bultos !== 1 ? 's' : ''}</div>
+            <div class="dist-badge">${dist}</div>
+          </div>
+        </div>
+        <div class="stop-actions">
+          ${wsp ? `<a class="btn-wsp" href="${wsp}" target="_blank" rel="noopener">${wspIcon} Avisar llegada</a>` : ''}
+          <button class="btn-done ${done ? 'active' : ''}" onclick="toggleEntregado(${p.id})">
+            ${done ? '✓ Entregado' : 'Marcar entregado'}
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  app.innerHTML = `
+    <div class="header">
+      <div class="header-top">
+        <div>
+          <h1>Ruta de hoy</h1>
+          <div class="header-date">${fecha}</div>
+        </div>
+        <div style="text-align:right;font-size:13px;opacity:0.9">
+          ${nEntregados}/${ruta.length} entregados
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width:${progPct}%"></div>
+      </div>
+      <div class="header-stats">
+        <span><strong>${ruta.length}</strong> paradas</span>
+        <span><strong>${totalBultos}</strong> bultos</span>
+        <span><strong>${totalKm.toFixed(1)} km</strong> totales</span>
+      </div>
+    </div>
+
+    <div class="depot-row">
+      <div class="depot-dot">🏭</div>
+      <div class="depot-info">
+        <div class="depot-name">Depósito</div>
+        <div class="depot-addr">Av. Caseros 2431, CABA · Punto de partida</div>
+      </div>
+    </div>
+
+    ${stops}
+
+    <div class="connector"></div>
+    <div class="finish-row">
+      <div class="depot-dot">🏭</div>
+      <div class="depot-info">
+        <div class="depot-name">Regreso al depósito</div>
+        <div class="depot-addr">${distVuelta.toFixed(1)} km de vuelta</div>
+      </div>
+    </div>
+  `;
+}
+
+render();
+</script>
+</body>
+</html>
