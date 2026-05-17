@@ -370,11 +370,9 @@ body {
   </button>
 </div>
 
-<!-- PANEL: PEDIDOS -->
+<!-- PANEL: PEDIDOS (solo formulario) -->
 <div class="panel active" id="panelPedidos">
   <div class="inner">
-
-    <!-- FORM -->
     <div class="form-card">
       <h2>Agregar pedido</h2>
       <div class="form-grid">
@@ -411,17 +409,17 @@ body {
         <button class="btn btn-ghost btn-sm" id="btnLimpiar" onclick="limpiarTodo()" style="display:none">Limpiar todo</button>
       </div>
     </div>
-
-    <!-- LISTA POR ZONA -->
-    <div id="chipsPedidos" class="chips" style="display:none"></div>
-    <div id="zonasPedidos"></div>
-
+    <div id="confirmAgregado" style="display:none;text-align:center;padding:16px;font-size:14px;color:var(--accent);font-weight:500"></div>
   </div>
 </div>
 
-<!-- PANEL: RUTA -->
+<!-- PANEL: RUTA (pedidos por zona + ruta optimizada) -->
 <div class="panel" id="panelRuta">
-  <div class="inner" id="rutaInner"></div>
+  <div class="inner">
+    <div id="chipsPedidos" class="chips" style="display:none"></div>
+    <div id="rutaInner"></div>
+    <div style="margin-top:20px" id="zonasPedidos"></div>
+  </div>
 </div>
 
 <script>
@@ -614,7 +612,12 @@ function agregarPedido() {
   document.getElementById('geoOk').style.display='none';
   currentGeo=null;
   document.getElementById('fNombre').focus();
-  renderPedidos();
+  // Mostrar confirmación breve
+  const conf=document.getElementById('confirmAgregado');
+  conf.textContent=`✓ ${nombre} agregado — ${pedidos.length} pedido${pedidos.length!==1?'s':''} en total`;
+  conf.style.display='block';
+  clearTimeout(window._confTimer);
+  window._confTimer=setTimeout(()=>conf.style.display='none',2500);
   updateBadges();
 }
 
@@ -629,7 +632,7 @@ function limpiarTodo() {
   if(!confirm('¿Borrar todos los pedidos del día?')) return;
   pedidos=[]; entregados=[];
   save(); saveEntregados();
-  renderPedidos(); renderRuta(); updateBadges();
+  renderRuta(); updateBadges();
 }
 
 function toggleEntregado(id) {
@@ -710,6 +713,7 @@ function renderPedidos() {
 /* ── RENDER RUTA ── */
 function renderRuta() {
   const el=document.getElementById('rutaInner');
+  renderPedidos();
   if(!pedidos.length){
     el.innerHTML='<div class="empty-all">No hay pedidos cargados.<br>Cargalos en la solapa Pedidos.</div>'; return;
   }
@@ -785,7 +789,6 @@ document.getElementById('headerDate').textContent=new Date().toLocaleDateString(
 
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 
-renderPedidos();
 updateBadges();
 </script>
 </body>
